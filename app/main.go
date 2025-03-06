@@ -12,7 +12,7 @@ var _ = fmt.Fprint
 func main() {
 	// Uncomment this block to pass the first stage
 	// Wait for user input
-	fmt.Fprint(os.Stdout, "$")
+	fmt.Fprint(os.Stdout, "$ ")
 	bufio.NewReader(os.Stdin).ReadString('\n')
 	fmt.Fprint(os.Stdout, "invalid_command: command not found")
 }
