@@ -35,7 +35,7 @@ func main() {
 			} else if words[1] == "type" {
 				fmt.Println("type is a shell builtin")
 			} else {
-				fmt.Printf("%s: command not found\n", words[1])
+				fmt.Printf("%s: not found\n", words[1])
 			}
 		} else {
 			fmt.Printf("%s: command not found\n", command)
