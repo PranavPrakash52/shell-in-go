@@ -18,7 +18,7 @@ func main() {
 	for _, path := range PATH_ {
 		entries, err := os.ReadDir(path)
 		if err != nil {
-			fmt.Println(err)
+			continue
 		}
 		for _, entry := range entries {
 			map_[entry.Name()] = path
