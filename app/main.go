@@ -19,10 +19,14 @@ func main() {
 		if err != nil {
 			fmt.Printf("%s: invalid input\n", input)
 		}
-		if strings.TrimSpace(input) == "exit 0" {
+		command := strings.TrimSpace(input)
+		if command == "exit 0" {
 			break
+		} else if strings.Contains(command, "echo") {
+			words := strings.Split(command, " ")
+			fmt.Println(strings.Join(words[1:], " "))
 		} else {
-			fmt.Printf("%s: command not found\n", strings.TrimSpace(input))
+			fmt.Printf("%s: command not found\n", command)
 		}
 	}
 }
