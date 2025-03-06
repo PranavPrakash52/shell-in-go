@@ -14,6 +14,16 @@ func main() {
 	// Uncomment this block to pass the first stage
 	// Wait for user input
 	PATH_ := strings.Split(os.Getenv("PATH"), ":")
+	map_ := make(map[string]string)
+	for _, path := range PATH_ {
+		entries, err := os.ReadDir(path)
+		if err != nil {
+			fmt.Println(err)
+		}
+		for _, entry := range entries {
+			map_[entry.Name()] = path
+		}
+	}
 	for {
 		fmt.Fprint(os.Stdout, "$ ")
 		input, err := bufio.NewReader(os.Stdin).ReadString('\n')
@@ -28,15 +38,9 @@ func main() {
 		} else if command == "echo" {
 			fmt.Println(strings.Join(words[1:], " "))
 		} else if command == "type" && len(words) > 1 {
-			found := false
-			for _, path := range PATH_ {
-				if strings.Contains(path, words[1]) {
-					fmt.Println(words[1], "is", path)
-					found = true
-					break
-				}
-			}
-			if !found {
+			if _, ok := map_[words[1]]; ok {
+				fmt.Println(words[1], "is", map_[words[1]])
+			} else {
 				fmt.Printf("%s: not found\n", words[1])
 			}
 		} else {
