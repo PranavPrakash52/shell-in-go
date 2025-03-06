@@ -39,7 +39,7 @@ func main() {
 			fmt.Println(strings.Join(words[1:], " "))
 		} else if command == "type" && len(words) > 1 {
 			if _, ok := map_[words[1]]; ok {
-				fmt.Println(words[1], "is", map_[words[1]])
+				fmt.Println(words[1], "is", map_[words[1]]+"/"+words[1])
 			} else {
 				fmt.Printf("%s: not found\n", words[1])
 			}
