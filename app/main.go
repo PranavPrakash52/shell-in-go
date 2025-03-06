@@ -19,12 +19,24 @@ func main() {
 		if err != nil {
 			fmt.Printf("%s: invalid input\n", input)
 		}
-		command := strings.TrimSpace(input)
-		if command == "exit 0" {
+		input_string := strings.TrimSpace(input)
+		command := strings.Split(input_string, " ")[0]
+		if command == "exit" {
 			break
-		} else if strings.Contains(command, "echo") {
-			words := strings.Split(command, " ")
+		} else if command == "echo" {
+			words := strings.Split(input_string, " ")
 			fmt.Println(strings.Join(words[1:], " "))
+		} else if command == "type" {
+			words := strings.Split(input_string, " ")
+			if words[1] == "echo" {
+				fmt.Println("echo is a shell builtin")
+			} else if words[1] == "exit" {
+				fmt.Println("exit is a shell builtin")
+			} else if words[1] == "type" {
+				fmt.Println("type is a shell builtin")
+			} else {
+				fmt.Printf("%s: command not found\n", words[1])
+			}
 		} else {
 			fmt.Printf("%s: command not found\n", command)
 		}
