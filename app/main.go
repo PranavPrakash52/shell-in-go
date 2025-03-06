@@ -13,6 +13,7 @@ var _ = fmt.Fprint
 func main() {
 	// Uncomment this block to pass the first stage
 	// Wait for user input
+	PATH_ := strings.Split(os.Getenv("PATH"), ":")
 	for {
 		fmt.Fprint(os.Stdout, "$ ")
 		input, err := bufio.NewReader(os.Stdin).ReadString('\n')
@@ -21,20 +22,21 @@ func main() {
 		}
 		input_string := strings.TrimSpace(input)
 		command := strings.Split(input_string, " ")[0]
+		words := strings.Split(input_string, " ")
 		if command == "exit" {
 			break
 		} else if command == "echo" {
-			words := strings.Split(input_string, " ")
 			fmt.Println(strings.Join(words[1:], " "))
-		} else if command == "type" {
-			words := strings.Split(input_string, " ")
-			if words[1] == "echo" {
-				fmt.Println("echo is a shell builtin")
-			} else if words[1] == "exit" {
-				fmt.Println("exit is a shell builtin")
-			} else if words[1] == "type" {
-				fmt.Println("type is a shell builtin")
-			} else {
+		} else if command == "type" && len(words) > 1 {
+			found := false
+			for _, path := range PATH_ {
+				if strings.Contains(path, words[1]) {
+					fmt.Println(words[1], "is", path)
+					found = true
+					break
+				}
+			}
+			if !found {
 				fmt.Printf("%s: not found\n", words[1])
 			}
 		} else {
