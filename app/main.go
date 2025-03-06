@@ -16,10 +16,13 @@ func main() {
 	for {
 		fmt.Fprint(os.Stdout, "$ ")
 		input, err := bufio.NewReader(os.Stdin).ReadString('\n')
-		fmt.Printf("%s: command not found\n", strings.TrimSpace(input))
-
 		if err != nil {
 			fmt.Printf("%s: invalid input\n", input)
+		}
+		if strings.TrimSpace(input) == "exit 0" {
+			break
+		} else {
+			fmt.Printf("%s: command not found\n", strings.TrimSpace(input))
 		}
 	}
 }
