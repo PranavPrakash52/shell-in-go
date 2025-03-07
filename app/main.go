@@ -21,6 +21,9 @@ func main() {
 			continue
 		}
 		for _, entry := range entries {
+			if _, ok := map_[entry.Name()]; ok {
+				continue
+			}
 			map_[entry.Name()] = path
 		}
 	}
