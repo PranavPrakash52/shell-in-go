@@ -10,6 +10,26 @@ import (
 
 // Ensures gofmt doesn't remove the "fmt" import in stage 1 (feel free to remove this!)
 // var _ = fmt.Fprint
+func run_command(command string, words []string) {
+	cmd_ := exec.Command(command, words[1:]...)
+	cmd_.Stdin = os.Stdin
+	cmd_.Stdout = os.Stdout
+	cmd_.Stderr = os.Stderr
+	err := cmd_.Run()
+	if err != nil {
+		fmt.Printf("%s: command not found\n", command)
+	}
+}
+
+func type_command(command string, words []string, map_ map[string]string, builtin_map_ map[string]bool) {
+	if _, ok := builtin_map_[words[1]]; ok {
+		fmt.Println(words[1], "is a shell builtin")
+	} else if _, ok := map_[words[1]]; ok {
+		fmt.Println(words[1], "is", map_[words[1]]+"/"+words[1])
+	} else {
+		fmt.Printf("%s: not found\n", words[1])
+	}
+}
 
 func main() {
 	// Uncomment this block to pass the first stage
@@ -49,29 +69,16 @@ func main() {
 			fmt.Printf("%s: invalid input\n", input)
 		}
 		input_string := strings.TrimSpace(input)
-		command := strings.Split(input_string, " ")[0]
-		words := strings.Split(input_string, " ")
+		args := strings.Split(input_string, " ")
+		command := args[0]
 		if command == "exit" {
 			break
 		} else if command == "echo" {
-			fmt.Println(strings.Join(words[1:], " "))
-		} else if command == "type" && len(words) > 1 {
-			if _, ok := builtin_map_[words[1]]; ok {
-				fmt.Println(words[1], "is a shell builtin")
-			} else if _, ok := map_[words[1]]; ok {
-				fmt.Println(words[1], "is", map_[words[1]]+"/"+words[1])
-			} else {
-				fmt.Printf("%s: not found\n", words[1])
-			}
+			fmt.Println(strings.Join(args[1:], " "))
+		} else if command == "type" && len(args) > 1 {
+			type_command(command, args, map_, builtin_map_)
 		} else if _, ok := map_[command]; ok {
-			cmd_ := exec.Command(command, words[1:]...)
-			cmd_.Stdin = os.Stdin
-			cmd_.Stdout = os.Stdout
-			cmd_.Stderr = os.Stderr
-			err := cmd_.Run()
-			if err != nil {
-				fmt.Printf("%s: command not found\n", command)
-			}
+			run_command(command, args)
 		} else {
 			fmt.Printf("%s: command not found\n", command)
 		}
