@@ -64,7 +64,7 @@ func main() {
 				fmt.Printf("%s: not found\n", words[1])
 			}
 		} else if _, ok := map_[command]; ok {
-			cmd_ := exec.Command(map_[command] + "/" + command, words[1:]...)
+			cmd_ := exec.Command(command, words[1:]...)
 			cmd_.Stdin = os.Stdin
 			cmd_.Stdout = os.Stdout
 			cmd_.Stderr = os.Stderr
