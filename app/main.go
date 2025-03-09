@@ -19,6 +19,14 @@ func run_pwd() {
 	fmt.Println(path)
 }
 
+func run_cd(path string) {
+	err := os.Chdir(path)
+	if err != nil {
+		fmt.Println(err)
+		fmt.Printf("No such file or directory")
+	}
+}
+
 func run_command(command string, args []string) {
 	var cmd_ *exec.Cmd
 	if len(args) == 1 {
@@ -94,7 +102,9 @@ func main() {
 			type_command(command, args, map_, builtin_map_)
 		} else if command == "pwd" {
 			run_pwd()
-		}else if _, ok := map_[command]; ok {
+		} else if command == "cd"{
+			run_cd(args[1])
+		} else if _, ok := map_[command]; ok {
 			run_command(command, args)
 		} else {
 			fmt.Printf("%s: command not found\n", command)
