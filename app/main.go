@@ -11,12 +11,12 @@ import (
 // Ensures gofmt doesn't remove the "fmt" import in stage 1 (feel free to remove this!)
 // var _ = fmt.Fprint
 func run_pwd() {
-	fpath, err := exec.LookPath("pwd")
+	path, err := os.Getwd()
 	if err != nil {
 		fmt.Println(err)
 		fmt.Printf("%s: command not found\n", "pwd")
 	}
-	fmt.Println(fpath)
+	fmt.Println(path)
 }
 
 func run_command(command string, args []string) {
@@ -93,7 +93,6 @@ func main() {
 		} else if command == "type" && len(args) > 1 {
 			type_command(command, args, map_, builtin_map_)
 		} else if command == "pwd" {
-			fmt.Println("pwd")
 			run_pwd()
 		}else if _, ok := map_[command]; ok {
 			run_command(command, args)
