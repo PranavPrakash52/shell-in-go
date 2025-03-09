@@ -10,9 +10,12 @@ import (
 
 // Ensures gofmt doesn't remove the "fmt" import in stage 1 (feel free to remove this!)
 // var _ = fmt.Fprint
-func run_command(command string, words []string) {
-	fmt.Println(command, words)
-	cmd_ := exec.Command(command, words[1:]...)
+func run_command(command string, args []string) {
+	if len(args) == 1 {
+		cmd_ := exec.Command(command)
+	} else {
+		cmd_ := exec.Command(command, args[1:]...)
+	}
 	cmd_.Stdin = os.Stdin
 	cmd_.Stdout = os.Stdout
 	cmd_.Stderr = os.Stderr
