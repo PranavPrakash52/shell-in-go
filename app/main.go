@@ -29,6 +29,14 @@ func run_cd(path string) {
 	}
 }
 
+func run_echo(args []string) {
+	for _, arg := range args[1:] {
+		arg = strings.ReplaceAll(arg, "'", "")
+		fmt.Printf("%s ", arg)
+	}
+	fmt.Println()
+}
+
 func run_command(command string, args []string) {
 	var cmd_ *exec.Cmd
 	if len(args) == 1 {
@@ -99,7 +107,7 @@ func main() {
 		if command == "exit" {
 			break
 		} else if command == "echo" {
-			fmt.Println(strings.Join(args[1:], " "))
+			run_echo(args)
 		} else if command == "type" && len(args) > 1 {
 			type_command(command, args, map_, builtin_map_)
 		} else if command == "pwd" {
