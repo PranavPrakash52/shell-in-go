@@ -85,6 +85,7 @@ func main() {
 		} else if command == "type" && len(args) > 1 {
 			type_command(command, args, map_, builtin_map_)
 		} else if _, ok := map_[command]; ok {
+			fmt.Println( map_[command])
 			run_command(command, args)
 		} else {
 			fmt.Printf("%s: command not found\n", command)
