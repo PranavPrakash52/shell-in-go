@@ -67,6 +67,7 @@ func main() {
 			cmd_ := exec.Command(map_[command], words[1:]...)
 			err := cmd_.Run()
 			if err != nil {
+				fmt.Println(err)
 				fmt.Printf("%s: command not found\n", command)
 			}
 		} else {
