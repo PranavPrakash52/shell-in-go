@@ -16,11 +16,7 @@ func run_pwd() {
 		fmt.Println(err)
 		fmt.Printf("%s: command not found\n", "pwd")
 	}
-	cmd_ := exec.Command(fpath)
-	cmd_.Stdin = os.Stdin
-	cmd_.Stdout = os.Stdout
-	cmd_.Stderr = os.Stderr
-	cmd_.Run()
+	fmt.Println(fpath)
 }
 
 func run_command(command string, args []string) {
