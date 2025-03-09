@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"os/exec"
 	"strings"
 )
 
@@ -62,9 +63,15 @@ func main() {
 			} else {
 				fmt.Printf("%s: not found\n", words[1])
 			}
+		} else if _, ok := map_[command]; ok {
+			cmd_ := exec.Command(map_[command], words[1:]...)
+			err := cmd_.Run()
+			if err != nil {
+				fmt.Printf("%s: command not found\n", command)
+			}
 		} else {
 			fmt.Printf("%s: command not found\n", command)
 		}
-		
+
 	}
 }
