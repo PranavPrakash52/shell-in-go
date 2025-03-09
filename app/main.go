@@ -64,7 +64,6 @@ func main() {
 				fmt.Printf("%s: not found\n", words[1])
 			}
 		} else if _, ok := map_[command]; ok {
-			fmt.Println(map_[command] + "/" + command, words[1:]...)
 			cmd_ := exec.Command(map_[command] + "/" + command, words[1:]...)
 			err := cmd_.Run()
 			if err != nil {
