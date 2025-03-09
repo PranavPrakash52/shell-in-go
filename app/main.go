@@ -93,6 +93,7 @@ func main() {
 		} else if command == "type" && len(args) > 1 {
 			type_command(command, args, map_, builtin_map_)
 		} else if command == "pwd" {
+			fmt.Println("pwd")
 			run_pwd()
 		}else if _, ok := map_[command]; ok {
 			run_command(command, args)
