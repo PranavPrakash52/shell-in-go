@@ -22,8 +22,7 @@ func run_pwd() {
 func run_cd(path string) {
 	err := os.Chdir(path)
 	if err != nil {
-		fmt.Println(err)
-		fmt.Printf("No such file or directory")
+		fmt.Printf("cd %s: no such file or directory\n", path)
 	}
 }
 
