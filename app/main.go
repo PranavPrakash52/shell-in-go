@@ -30,10 +30,21 @@ func run_cd(path string) {
 }
 
 func run_echo(args []string) {
+	new_args := []string{}
+	count := 0
 	for _, arg := range args[1:] {
-		arg = strings.ReplaceAll(arg, "'", "")
-		fmt.Printf("%s ", arg)
+		if strings.Contains(arg, "'") {
+			arg = strings.ReplaceAll(arg, "'", "")
+			count += 1
+		}
+		new_args = append(new_args, arg)
+		if count % 2 == 0 {
+			fmt.Printf("%s ", strings.Join(new_args, " "))
+			new_args = []string{}
+			count = 0
+		}
 	}
+	fmt.Printf("%s", strings.Join(new_args, " "))
 	fmt.Println()
 }
 
