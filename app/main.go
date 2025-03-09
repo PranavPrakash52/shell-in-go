@@ -23,6 +23,7 @@ func run_command(command string, args []string) {
 	cmd_.Stderr = os.Stderr
 	err := cmd_.Run()
 	if err != nil {
+		fmt.Println(err)
 		fmt.Printf("%s: command not found\n", command)
 	}
 }
