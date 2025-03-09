@@ -38,13 +38,20 @@ func run_echo(args []string) {
 			count += 1
 		}
 		new_args = append(new_args, arg)
-		if count % 2 == 0 {
+		if count >= 2 {
 			fmt.Printf("%s ", strings.Join(new_args, " "))
 			new_args = []string{}
 			count = 0
 		}
 	}
-	fmt.Printf("%s", strings.Join(new_args, " "))
+	for _, arg := range new_args {
+		if arg == "" {
+			continue
+		} else {
+			fmt.Printf("%s", arg)
+			fmt.Printf(" ")
+		}
+	}
 	fmt.Println()
 }
 
