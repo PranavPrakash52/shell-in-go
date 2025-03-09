@@ -13,9 +13,9 @@ import (
 func run_command(command string, args []string) {
 	var cmd_ *exec.Cmd
 	if len(args) == 1 {
-		cmd_ := exec.Command(command)
+		cmd_ = exec.Command(command)
 	} else {
-		cmd_ := exec.Command(command, args[1:]...)
+		cmd_ = exec.Command(command, args[1:]...)
 	}
 	cmd_.Stdin = os.Stdin
 	cmd_.Stdout = os.Stdout
