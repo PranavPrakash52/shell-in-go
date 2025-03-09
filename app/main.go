@@ -11,6 +11,7 @@ import (
 // Ensures gofmt doesn't remove the "fmt" import in stage 1 (feel free to remove this!)
 // var _ = fmt.Fprint
 func run_command(command string, args []string) {
+	fmt.Println(command)
 	var cmd_ *exec.Cmd
 	if len(args) == 1 {
 		cmd_ = exec.Command(command)
