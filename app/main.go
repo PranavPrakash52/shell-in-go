@@ -56,6 +56,7 @@ func run_echo(args []string) {
 }
 
 func run_command(command string, args []string) {
+	fmt.Println(args)
 	var cmd_ *exec.Cmd
 	if len(args) == 1 {
 		cmd_ = exec.Command(command)
