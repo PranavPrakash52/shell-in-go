@@ -100,7 +100,6 @@ func run_command(command string, args []string) {
 	} else {
 		processed_args := []string{}
 		inputString := strings.Join(args[1:], " ")
-		fmt.Println(inputString)
 		start := 0
 		pointer := 0
 		for start < len(inputString) {
@@ -110,8 +109,6 @@ func run_command(command string, args []string) {
 				for start < len(inputString) {
 					if inputString[start] == '\'' {
 						processed_args = append(processed_args, inputString[pointer+1:start])
-						fmt.Println(processed_args)
-						start += 1
 						break
 					}
 					start += 1
