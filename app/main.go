@@ -79,7 +79,7 @@ func run_command(command string, args []string) {
 		for i := len(command) + 1; i < len(inputString); i++ {
 			char := inputString[i]
 			
-			if char == '\'' {
+			if char == '\'' || char == '"' {
 				inQuotes = !inQuotes
 				continue // Skip the quote character
 			}
