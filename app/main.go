@@ -116,23 +116,25 @@ func run_command(command string, args []string) {
 				for start < len(inputString) {
 					if inputString[start] == '\'' {
 						processed_args = append(processed_args, inputString[pointer+1:start])
+						start += 1
 						break
 					}
-					start += 1
+					start+=1
 				}
+				continue
 			}
 			processed_args = append(processed_args, string(inputString[start]))
-			start += 1
-	
+			start +=1
 		}
-	cmd_ = exec.Command(command, processed_args...)
-	cmd_.Stdin = os.Stdin
-	cmd_.Stdout = os.Stdout
-	cmd_.Stderr = os.Stderr
-	err := cmd_.Run()
-	if err != nil {
-		fmt.Printf("%s: command not found\n", command)
-		}
+		fmt.Println(processed_args)
+		cmd_ = exec.Command(command, processed_args...)
+		cmd_.Stdin = os.Stdin
+		cmd_.Stdout = os.Stdout
+		cmd_.Stderr = os.Stderr
+		err := cmd_.Run()
+		if err != nil {
+			fmt.Printf("%s: command not found\n", command)
+			}
 	}
 }
 func type_command(command string, words []string, map_ map[string]string, builtin_map_ map[string]bool) {
