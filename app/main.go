@@ -79,21 +79,19 @@ func run_command(command string, args []string) {
 		inputString := strings.Join(args, " ")
 		var currentArg strings.Builder
 		inQuotes := false
-
-
-		
+		inDoubleQuotes := false		
 		for i := len(command) + 1; i < len(inputString); i++ {
 			char := inputString[i]
 			if char == '"' {
-				inQuotes = !inQuotes
+				inDoubleQuotes = !inDoubleQuotes
 				continue
 			}
-			if char == '\'' && !inQuotes {
+			if char == '\'' && !inDoubleQuotes {
 				inQuotes = !inQuotes
 				continue // Skip the quote character
 			}
 			
-			if char == ' ' && !inQuotes {
+			if char == ' ' && !inDoubleQuotes && !inQuotes {
 				// Space outside quotes means end of current argument
 				if currentArg.Len() > 0 {
 					processedArgs = append(processedArgs, currentArg.String())
