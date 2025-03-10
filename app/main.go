@@ -126,7 +126,6 @@ func run_command(command string, args []string) {
 			processed_args = append(processed_args, string(inputString[start]))
 			start +=1
 		}
-		fmt.Println(processed_args)
 		cmd_ = exec.Command(command, processed_args...)
 		cmd_.Stdin = os.Stdin
 		cmd_.Stdout = os.Stdout
