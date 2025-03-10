@@ -59,6 +59,13 @@ func run_command(command string, args []string) {
 	var cmd_ *exec.Cmd
 	if len(args) == 1 {
 		cmd_ = exec.Command(command)
+		cmd_.Stdin = os.Stdin
+		cmd_.Stdout = os.Stdout
+		cmd_.Stderr = os.Stderr
+		err := cmd_.Run()
+		if err != nil {
+			fmt.Printf("%s: command not found\n", command)
+		}
 	// } else {
 	// 	processedArgs := []string{}
 		
@@ -116,9 +123,10 @@ func run_command(command string, args []string) {
 			}
 			processed_args = append(processed_args, string(inputString[start]))
 			start += 1
+	
 		}
-		cmd_ = exec.Command(command, processed_args...)
 	}
+	cmd_ = exec.Command(command, processed_args...)
 	cmd_.Stdin = os.Stdin
 	cmd_.Stdout = os.Stdout
 	cmd_.Stderr = os.Stderr
