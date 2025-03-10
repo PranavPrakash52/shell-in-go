@@ -35,6 +35,7 @@ func run_echo(args []string) {
 	single_quote_count := 0
 	for _, arg := range args[1:] {
 		if strings.Contains(arg, "\"") {
+			fmt.Println(arg)
 			arg = strings.ReplaceAll(arg, "\"", "")
 			double_quote_count += 1
 		} else if strings.Contains(arg, "'") && double_quote_count == 0{
@@ -173,7 +174,7 @@ func main() {
 		if command == "exit" {
 			break
 		} else if command == "echo" {
-			run_echo(args)
+			run_command(command, args)
 		} else if command == "type" && len(args) > 1 {
 			type_command(command, args, map_, builtin_map_)
 		} else if command == "pwd" {
