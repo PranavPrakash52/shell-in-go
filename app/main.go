@@ -124,7 +124,7 @@ func run_command(command string, args []string) {
 				continue
 			}
 			if inputString[start] == ' ' {
-				start += 1
+				// start += 1
 				continue
 			}
 			processed_args = append(processed_args, string(inputString[start]))
