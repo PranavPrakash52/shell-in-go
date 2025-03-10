@@ -57,45 +57,39 @@ func run_echo(args []string) {
 
 func run_command(command string, args []string) {
 	var cmd_ *exec.Cmd
-	
 	if len(args) == 1 {
 		cmd_ = exec.Command(command)
 	} else {
 		processedArgs := []string{}
-		inQuotes := false
-		currentArg := ""
 		
-		// Process all arguments (excluding the command itself)
-		for _, arg := range args[1:] {
-			// Handle single quotes
-			if arg == "'" {
+		// Parse the entire input string again to properly handle quotes
+		inputString := strings.Join(args, " ")
+		var currentArg strings.Builder
+		inQuotes := false
+		
+		for i := len(command) + 1; i < len(inputString); i++ {
+			char := inputString[i]
+			
+			if char == '\'' {
 				inQuotes = !inQuotes
-				continue // Skip the quote itself
+				continue // Skip the quote character
 			}
 			
-			if inQuotes {
-				// When in quotes, append to current argument with space
-				if currentArg != "" {
-					currentArg += " "
+			if char == ' ' && !inQuotes {
+				// Space outside quotes means end of current argument
+				if currentArg.Len() > 0 {
+					processedArgs = append(processedArgs, currentArg.String())
+					currentArg.Reset()
 				}
-				currentArg += arg
 			} else {
-				// When not in quotes, treat as separate argument
-				if currentArg != "" {
-					// Add the completed quoted argument
-					processedArgs = append(processedArgs, currentArg)
-					currentArg = ""
-				}
-				
-				if arg != "" {
-					processedArgs = append(processedArgs, arg)
-				}
+				// Add character to current argument
+				currentArg.WriteByte(char)
 			}
 		}
 		
-		// Add any remaining argument being built
-		if currentArg != "" {
-			processedArgs = append(processedArgs, currentArg)
+		// Add the last argument if there is one
+		if currentArg.Len() > 0 {
+			processedArgs = append(processedArgs, currentArg.String())
 		}
 		
 		cmd_ = exec.Command(command, processedArgs...)
@@ -109,7 +103,6 @@ func run_command(command string, args []string) {
 		fmt.Printf("%s: command not found\n", command)
 	}
 }
-
 func type_command(command string, words []string, map_ map[string]string, builtin_map_ map[string]bool) {
 	if _, ok := builtin_map_[words[1]]; ok {
 		fmt.Println(words[1], "is a shell builtin")
