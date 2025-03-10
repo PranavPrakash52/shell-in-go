@@ -33,8 +33,9 @@ func run_echo(args []string) {
 	new_args := []string{}
 	count := 0
 	for _, arg := range args[1:] {
-		if strings.Contains(arg, "'") {
+		if strings.Contains(arg, "'") || strings.Contains(arg, "\"") {
 			arg = strings.ReplaceAll(arg, "'", "")
+			arg = strings.ReplaceAll(arg, "\"", "")
 			count += 1
 		}
 		new_args = append(new_args, arg)
@@ -78,8 +79,11 @@ func run_command(command string, args []string) {
 		
 		for i := len(command) + 1; i < len(inputString); i++ {
 			char := inputString[i]
-			
-			if char == '\'' || char == '"' {
+			if char == '"' {
+				inQuotes = !inQuotes
+				continue
+			}
+			if char == '\'' && !inQuotes {
 				inQuotes = !inQuotes
 				continue // Skip the quote character
 			}
