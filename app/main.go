@@ -125,7 +125,6 @@ func run_command(command string, args []string) {
 			start += 1
 	
 		}
-	}
 	cmd_ = exec.Command(command, processed_args...)
 	cmd_.Stdin = os.Stdin
 	cmd_.Stdout = os.Stdout
@@ -133,6 +132,7 @@ func run_command(command string, args []string) {
 	err := cmd_.Run()
 	if err != nil {
 		fmt.Printf("%s: command not found\n", command)
+		}
 	}
 }
 func type_command(command string, words []string, map_ map[string]string, builtin_map_ map[string]bool) {
