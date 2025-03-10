@@ -56,19 +56,56 @@ func run_echo(args []string) {
 }
 
 func run_command(command string, args []string) {
-	fmt.Println(args)
 	var cmd_ *exec.Cmd
+	
 	if len(args) == 1 {
 		cmd_ = exec.Command(command)
 	} else {
-		cmd_ = exec.Command(command, args[1:]...)
+		processedArgs := []string{}
+		inQuotes := false
+		currentArg := ""
+		
+		// Process all arguments (excluding the command itself)
+		for _, arg := range args[1:] {
+			// Handle single quotes
+			if arg == "'" {
+				inQuotes = !inQuotes
+				continue // Skip the quote itself
+			}
+			
+			if inQuotes {
+				// When in quotes, append to current argument with space
+				if currentArg != "" {
+					currentArg += " "
+				}
+				currentArg += arg
+			} else {
+				// When not in quotes, treat as separate argument
+				if currentArg != "" {
+					// Add the completed quoted argument
+					processedArgs = append(processedArgs, currentArg)
+					currentArg = ""
+				}
+				
+				if arg != "" {
+					processedArgs = append(processedArgs, arg)
+				}
+			}
+		}
+		
+		// Add any remaining argument being built
+		if currentArg != "" {
+			processedArgs = append(processedArgs, currentArg)
+		}
+		
+		cmd_ = exec.Command(command, processedArgs...)
 	}
+	
 	cmd_.Stdin = os.Stdin
 	cmd_.Stdout = os.Stdout
 	cmd_.Stderr = os.Stderr
 	err := cmd_.Run()
 	if err != nil {
-		fmt.Println(err)
 		fmt.Printf("%s: command not found\n", command)
 	}
 }
