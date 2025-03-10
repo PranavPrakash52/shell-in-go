@@ -59,42 +59,69 @@ func run_command(command string, args []string) {
 	var cmd_ *exec.Cmd
 	if len(args) == 1 {
 		cmd_ = exec.Command(command)
-	} else {
-		processedArgs := []string{}
+	// } else {
+	// 	processedArgs := []string{}
 		
-		// Parse the entire input string again to properly handle quotes
-		inputString := strings.Join(args, " ")
-		var currentArg strings.Builder
-		inQuotes := false
+	// 	// Parse the entire input string again to properly handle quotes
+	// 	inputString := strings.Join(args, " ")
+	// 	var currentArg strings.Builder
+	// 	inQuotes := false
+
+
 		
-		for i := len(command) + 1; i < len(inputString); i++ {
-			char := inputString[i]
+	// 	for i := len(command) + 1; i < len(inputString); i++ {
+	// 		char := inputString[i]
 			
-			if char == '\'' {
-				inQuotes = !inQuotes
-				continue // Skip the quote character
-			}
+	// 		if char == '\'' {
+	// 			inQuotes = !inQuotes
+	// 			continue // Skip the quote character
+	// 		}
 			
-			if char == ' ' && !inQuotes {
-				// Space outside quotes means end of current argument
-				if currentArg.Len() > 0 {
-					processedArgs = append(processedArgs, currentArg.String())
-					currentArg.Reset()
-				}
-			} else {
-				// Add character to current argument
-				currentArg.WriteByte(char)
-			}
-		}
+	// 		if char == ' ' && !inQuotes {
+	// 			// Space outside quotes means end of current argument
+	// 			if currentArg.Len() > 0 {
+	// 				processedArgs = append(processedArgs, currentArg.String())
+	// 				currentArg.Reset()
+	// 			}
+	// 		} else {
+	// 			// Add character to current argument
+	// 			currentArg.WriteByte(char)
+	// 		}
+	// 	}
 		
-		// Add the last argument if there is one
-		if currentArg.Len() > 0 {
-			processedArgs = append(processedArgs, currentArg.String())
-		}
+	// 	// Add the last argument if there is one
+	// 	if currentArg.Len() > 0 {
+	// 		processedArgs = append(processedArgs, currentArg.String())
+	// 	}
 		
-		cmd_ = exec.Command(command, processedArgs...)
-	}
+	// 	cmd_ = exec.Command(command, processedArgs...)
+	// }
 	
+	} else {
+		processed_args := []string{}
+		inputString := strings.Join(args[1:], " ")
+		fmt.Println(inputString)
+		start := 0
+		pointer := 0
+		for start < len(inputString) {
+			if inputString[start] == '\'' {
+				pointer = start
+				start += 1
+				for start < len(inputString) {
+					if inputString[start] == '\'' {
+						processed_args = append(processed_args, inputString[pointer+1:start])
+						fmt.Println(processed_args)
+						start += 1
+						break
+					}
+					start += 1
+				}
+			}
+			processed_args = append(processed_args, string(inputString[start]))
+			start += 1
+		}
+		cmd_ = exec.Command(command, processed_args...)
+	}
 	cmd_.Stdin = os.Stdin
 	cmd_.Stdout = os.Stdout
 	cmd_.Stderr = os.Stderr
