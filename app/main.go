@@ -63,6 +63,11 @@ func run_echo(args []string) {
 
 func run_command(command string, args []string) {
 	var cmd_ *exec.Cmd
+	special_char_double_quote := map[string]bool{
+		"\\": true,
+		"$": true,
+		"\"": true,
+	}
 	if len(args) == 1 {
 		cmd_ = exec.Command(command)
 		cmd_.Stdin = os.Stdin
@@ -98,10 +103,14 @@ func run_command(command string, args []string) {
 					currentArg.Reset()
 				}
 			} else {
-				// Add character to current argument
-				if char == '\\'  && !inDoubleQuotes && !inQuotes {
-					char = inputString[i+1]
-					i += 1
+				if char == '\\' && !inQuotes {
+					if inDoubleQuotes && special_char_double_quote[string(inputString[i+1])] {
+						char = inputString[i+1]
+						i += 1
+					}else if char == '\\' && !inDoubleQuotes && !inQuotes {
+						char = inputString[i+1]
+						i += 1
+					}
 				}
 				currentArg.WriteByte(char)
 			}
