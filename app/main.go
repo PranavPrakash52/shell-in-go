@@ -99,6 +99,10 @@ func run_command(command string, args []string) {
 				}
 			} else {
 				// Add character to current argument
+				if char == '\\'{
+					char = inputString[i+1]
+					i += 1
+				}
 				currentArg.WriteByte(char)
 			}
 		}
