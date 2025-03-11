@@ -82,7 +82,7 @@ func run_command(command string, args []string) {
 		inDoubleQuotes := false		
 		for i := len(command) + 1; i < len(inputString); i++ {
 			char := inputString[i]
-			if char == '"' {
+			if char == '"' && !inQuotes {
 				inDoubleQuotes = !inDoubleQuotes
 				continue
 			}
@@ -99,14 +99,13 @@ func run_command(command string, args []string) {
 				}
 			} else {
 				// Add character to current argument
-				if char == '\\'  && !inDoubleQuotes {
+				if char == '\\'  && !inDoubleQuotes && !inQuotes {
 					char = inputString[i+1]
 					i += 1
 				}
 				currentArg.WriteByte(char)
 			}
 		}
-		
 		// Add the last argument if there is one
 		if currentArg.Len() > 0 {
 			processedArgs = append(processedArgs, currentArg.String())
