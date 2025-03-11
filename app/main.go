@@ -61,6 +61,49 @@ func run_echo(args []string) {
 	fmt.Println()
 }
 
+func cleanup_args(args []string, special_char_double_quote map[string]bool) []string {
+	inputString := strings.Join(args, " ")
+	var currentArg strings.Builder
+	inQuotes := false
+	inDoubleQuotes := false
+	processedArgs := []string{}
+	for i := 0; i < len(inputString); i++ {
+		char := inputString[i]
+		if char == '"' && !inQuotes {
+			inDoubleQuotes = !inDoubleQuotes
+			continue
+		}
+		if char == '\'' && !inDoubleQuotes {
+			inQuotes = !inQuotes
+			continue // Skip the quote character
+		}
+		
+		if char == ' ' && !inDoubleQuotes && !inQuotes {
+			// Space outside quotes means end of current argument
+			if currentArg.Len() > 0 {
+				processedArgs = append(processedArgs, currentArg.String())
+				currentArg.Reset()
+			}
+		} else {
+			if char == '\\' && !inQuotes {
+				if inDoubleQuotes && special_char_double_quote[string(inputString[i+1])] {
+					char = inputString[i+1]
+					i += 1
+				}else if char == '\\' && !inDoubleQuotes && !inQuotes {
+					char = inputString[i+1]
+					i += 1
+				}
+			}
+			currentArg.WriteByte(char)
+		}
+	}
+	// Add the last argument if there is one
+	if currentArg.Len() > 0 {
+	processedArgs = append(processedArgs, currentArg.String())
+}
+	return processedArgs
+}
+
 func run_command(command string, args []string) {
 	var cmd_ *exec.Cmd
 	special_char_double_quote := map[string]bool{
@@ -79,48 +122,8 @@ func run_command(command string, args []string) {
 		}
 	} else {
 		processedArgs := []string{}
-		
-		// Parse the entire input string again to properly handle quotes
-		inputString := strings.Join(args, " ")
-		var currentArg strings.Builder
-		inQuotes := false
-		inDoubleQuotes := false		
-		for i := len(command) + 1; i < len(inputString); i++ {
-			char := inputString[i]
-			if char == '"' && !inQuotes {
-				inDoubleQuotes = !inDoubleQuotes
-				continue
-			}
-			if char == '\'' && !inDoubleQuotes {
-				inQuotes = !inQuotes
-				continue // Skip the quote character
-			}
-			
-			if char == ' ' && !inDoubleQuotes && !inQuotes {
-				// Space outside quotes means end of current argument
-				if currentArg.Len() > 0 {
-					processedArgs = append(processedArgs, currentArg.String())
-					currentArg.Reset()
-				}
-			} else {
-				if char == '\\' && !inQuotes {
-					if inDoubleQuotes && special_char_double_quote[string(inputString[i+1])] {
-						char = inputString[i+1]
-						i += 1
-					}else if char == '\\' && !inDoubleQuotes && !inQuotes {
-						char = inputString[i+1]
-						i += 1
-					}
-				}
-				currentArg.WriteByte(char)
-			}
-		}
-		// Add the last argument if there is one
-		if currentArg.Len() > 0 {
-			processedArgs = append(processedArgs, currentArg.String())
-		}
-		
-		cmd_ = exec.Command(command, processedArgs...)
+		processedArgs = cleanup_args(args, special_char_double_quote)
+		cmd_ = exec.Command(processedArgs[0], processedArgs[1:]...)
 		cmd_.Stdin = os.Stdin
 		cmd_.Stdout = os.Stdout
 		cmd_.Stderr = os.Stderr
@@ -191,10 +194,8 @@ func main() {
 			run_pwd()
 		} else if command == "cd"{
 			run_cd(args[1])
-		} else if _, ok := map_[command]; ok {
-			run_command(command, args)
 		} else {
-			fmt.Printf("%s: command not found\n", command)
+			run_command(command, args)
 		}
 
 	}
