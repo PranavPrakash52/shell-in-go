@@ -94,9 +94,11 @@ func run_command(command string, args []string) {
 		new_args := []string{}
 		separator := ">"
 		processedArgs = cleanup_args(args, special_char_double_quote)
-		if slices.Contains(processedArgs, ">") || slices.Contains(processedArgs, "1>") {
+		if slices.Contains(processedArgs, ">") || slices.Contains(processedArgs, "1>") || slices.Contains(processedArgs, "2>") {
 			if slices.Contains(processedArgs, "1>") {
 				separator = "1>"
+			} else if slices.Contains(processedArgs, "2>") {
+				separator = "2>"
 			}
 			new_args = processedArgs[:slices.Index(processedArgs, separator)]
 			file_name := processedArgs[slices.Index(processedArgs, separator)+1]
@@ -104,14 +106,19 @@ func run_command(command string, args []string) {
 			if err != nil {
 				fmt.Printf("%s: cannot redirect\n", command)
 			}
-			cmd_ = exec.Command(new_args[0], new_args[1:]...)
-			cmd_.Stdin = os.Stdin
-			cmd_.Stdout = file
-			cmd_.Stderr = os.Stderr
-			err = cmd_.Run()
-			// if err != nil {
-			// 	fmt.Printf("%s: command not found\n", command)
-			// }
+			if slices.Contains(processedArgs, "2>") {
+				cmd_ = exec.Command(new_args[0], new_args[1:]...)
+				cmd_.Stdin = os.Stdin
+				cmd_.Stdout = os.Stdout
+				cmd_.Stderr = file
+				err = cmd_.Run()
+			} else {
+				cmd_ = exec.Command(new_args[0], new_args[1:]...)
+				cmd_.Stdin = os.Stdin
+				cmd_.Stdout = file
+				cmd_.Stderr = os.Stderr
+				err = cmd_.Run()
+			}
 		} else {
 			cmd_ = exec.Command(processedArgs[0], processedArgs[1:]...)
 			cmd_.Stdin = os.Stdin
