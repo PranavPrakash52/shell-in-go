@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"slices"
 	"strings"
 )
 
@@ -29,38 +30,6 @@ func run_cd(path string) {
 	}
 }
 
-func run_echo(args []string) {
-	new_args := []string{}
-	double_quote_count := 0
-	single_quote_count := 0
-	for _, arg := range args[1:] {
-		if strings.Contains(arg, "\"") {
-			fmt.Println(arg)
-			arg = strings.ReplaceAll(arg, "\"", "")
-			double_quote_count += 1
-		} else if strings.Contains(arg, "'") && double_quote_count == 0{
-			arg = strings.ReplaceAll(arg, "'", "")
-			single_quote_count += 1
-		}
-		new_args = append(new_args, arg)
-		if double_quote_count >= 2 || single_quote_count >= 2 {
-			fmt.Printf("%s ", strings.Join(new_args, " "))
-			new_args = []string{}
-			double_quote_count = 0
-			single_quote_count = 0
-		}
-	}
-	for _, arg := range new_args {
-		if arg == "" {
-			continue
-		} else {
-			fmt.Printf("%s", arg)
-			fmt.Printf(" ")
-		}
-	}
-	fmt.Println()
-}
-
 func cleanup_args(args []string, special_char_double_quote map[string]bool) []string {
 	inputString := strings.Join(args, " ")
 	var currentArg strings.Builder
@@ -77,7 +46,7 @@ func cleanup_args(args []string, special_char_double_quote map[string]bool) []st
 			inQuotes = !inQuotes
 			continue // Skip the quote character
 		}
-		
+
 		if char == ' ' && !inDoubleQuotes && !inQuotes {
 			// Space outside quotes means end of current argument
 			if currentArg.Len() > 0 {
@@ -89,7 +58,7 @@ func cleanup_args(args []string, special_char_double_quote map[string]bool) []st
 				if inDoubleQuotes && special_char_double_quote[string(inputString[i+1])] {
 					char = inputString[i+1]
 					i += 1
-				}else if char == '\\' && !inDoubleQuotes && !inQuotes {
+				} else if char == '\\' && !inDoubleQuotes && !inQuotes {
 					char = inputString[i+1]
 					i += 1
 				}
@@ -99,8 +68,8 @@ func cleanup_args(args []string, special_char_double_quote map[string]bool) []st
 	}
 	// Add the last argument if there is one
 	if currentArg.Len() > 0 {
-	processedArgs = append(processedArgs, currentArg.String())
-}
+		processedArgs = append(processedArgs, currentArg.String())
+	}
 	return processedArgs
 }
 
@@ -108,7 +77,7 @@ func run_command(command string, args []string) {
 	var cmd_ *exec.Cmd
 	special_char_double_quote := map[string]bool{
 		"\\": true,
-		"$": true,
+		"$":  true,
 		"\"": true,
 	}
 	if len(args) == 1 {
@@ -122,14 +91,36 @@ func run_command(command string, args []string) {
 		}
 	} else {
 		processedArgs := []string{}
+		new_args := []string{}
+		separator := ">"
 		processedArgs = cleanup_args(args, special_char_double_quote)
-		cmd_ = exec.Command(processedArgs[0], processedArgs[1:]...)
-		cmd_.Stdin = os.Stdin
-		cmd_.Stdout = os.Stdout
-		cmd_.Stderr = os.Stderr
-		err := cmd_.Run()
-		if err != nil {
-			fmt.Printf("%s: command not found\n", command)
+		if slices.Contains(processedArgs, ">") || slices.Contains(processedArgs, "1>") {
+			if slices.Contains(processedArgs, "1>") {
+				separator = "1>"
+			}
+			new_args = processedArgs[:slices.Index(processedArgs, separator)]
+			file_name := processedArgs[slices.Index(processedArgs, separator)+1]
+			file, err := os.Create(file_name)
+			if err != nil {
+				fmt.Printf("%s: cannot redirect\n", command)
+			}
+			cmd_ = exec.Command(new_args[0], new_args[1:]...)
+			cmd_.Stdin = os.Stdin
+			cmd_.Stdout = file
+			cmd_.Stderr = os.Stderr
+			err = cmd_.Run()
+			// if err != nil {
+			// 	fmt.Printf("%s: command not found\n", command)
+			// }
+		} else {
+			cmd_ = exec.Command(processedArgs[0], processedArgs[1:]...)
+			cmd_.Stdin = os.Stdin
+			cmd_.Stdout = os.Stdout
+			cmd_.Stderr = os.Stderr
+			err := cmd_.Run()
+			if err != nil {
+				fmt.Printf("%s: command not found\n", command)
+			}
 		}
 	}
 }
@@ -150,13 +141,13 @@ func main() {
 	PATH_ := strings.Split(os.Getenv("PATH"), ":")
 	map_ := make(map[string]string)
 	builtin_list := []string{
-		"echo", "cd", "pwd", "exit", "type", "alias", "bg", "bind", "break", 
-		"builtin", "caller", "command", "compgen", "complete", "compopt", 
-		"continue", "declare", "dirs", "disown", "enable", "eval", "exec", 
-		"export", "false", "fc", "fg", "getopts", "hash", "help", "history", 
-		"jobs", "kill", "let", "local", "logout", "mapfile", "popd", "printf", 
-		"pushd", "read", "readarray", "readonly", "return", "set", "shift", 
-		"shopt", "source", "suspend", "test", "times", "trap", "true", "type", 
+		"echo", "cd", "pwd", "exit", "type", "alias", "bg", "bind", "break",
+		"builtin", "caller", "command", "compgen", "complete", "compopt",
+		"continue", "declare", "dirs", "disown", "enable", "eval", "exec",
+		"export", "false", "fc", "fg", "getopts", "hash", "help", "history",
+		"jobs", "kill", "let", "local", "logout", "mapfile", "popd", "printf",
+		"pushd", "read", "readarray", "readonly", "return", "set", "shift",
+		"shopt", "source", "suspend", "test", "times", "trap", "true", "type",
 		"typeset", "ulimit", "umask", "unalias", "unset", "wait",
 	}
 	builtin_map_ := make(map[string]bool)
@@ -192,7 +183,7 @@ func main() {
 			type_command(command, args, map_, builtin_map_)
 		} else if command == "pwd" {
 			run_pwd()
-		} else if command == "cd"{
+		} else if command == "cd" {
 			run_cd(args[1])
 		} else {
 			run_command(command, args)
