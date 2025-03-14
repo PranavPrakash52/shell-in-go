@@ -73,6 +73,37 @@ func cleanup_args(args []string, special_char_double_quote map[string]bool) []st
 	return processedArgs
 }
 
+func create_or_append_file(file_name string, appending bool) *os.File {
+	if appending {
+		file, err := os.OpenFile(file_name, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+		if err != nil {
+			fmt.Printf("%s: cannot redirect\n", file_name)
+		}
+		return file
+	}
+	file, err := os.Create(file_name)
+	if err != nil {
+		fmt.Printf("%s: cannot redirect\n", file_name)
+	}
+	return file
+}
+
+func execute_command(command string, args []string, out *os.File, std_out bool, std_err bool) {
+	cmd_ := exec.Command(command, args...)
+	cmd_.Stdin = os.Stdin
+	if std_out {
+		cmd_.Stdout = out
+	} else {
+		cmd_.Stdout = os.Stdout
+	}
+	if std_err {
+		cmd_.Stderr = out
+	} else {
+		cmd_.Stderr = os.Stderr
+	}
+	cmd_.Run()
+}
+
 func run_command(command string, args []string) {
 	var cmd_ *exec.Cmd
 	special_char_double_quote := map[string]bool{
@@ -92,42 +123,33 @@ func run_command(command string, args []string) {
 	} else {
 		processedArgs := []string{}
 		new_args := []string{}
-		separator := ">"
+		separator := ""
 		processedArgs = cleanup_args(args, special_char_double_quote)
-		if slices.Contains(processedArgs, ">") || slices.Contains(processedArgs, "1>") || slices.Contains(processedArgs, "2>") {
-			if slices.Contains(processedArgs, "1>") {
-				separator = "1>"
-			} else if slices.Contains(processedArgs, "2>") {
-				separator = "2>"
+		appending_seperator_list := []string{"1>>", ">>", "2>>", ">", "1>", "2>"}
+		for _, seperator := range appending_seperator_list {
+			if slices.Contains(processedArgs, seperator) {
+				separator = seperator
+				break
 			}
+		}
+		if separator == "" {
+			execute_command(processedArgs[0], processedArgs[1:], nil, false, false)
+		} else {
 			new_args = processedArgs[:slices.Index(processedArgs, separator)]
 			file_name := processedArgs[slices.Index(processedArgs, separator)+1]
-			file, err := os.Create(file_name)
-			if err != nil {
-				fmt.Printf("%s: cannot redirect\n", command)
+			var file *os.File
+			switch separator {
+			case ">", "1>":
+				file = create_or_append_file(file_name, false)
+				execute_command(new_args[0], new_args[1:], file, true, false)
+			case "2>":
+				file = create_or_append_file(file_name, false)
+				execute_command(new_args[0], new_args[1:], file, false, true)
+			case "1>>", ">>":
+				file = create_or_append_file(file_name, true)
+				execute_command(new_args[0], new_args[1:], file, true, false)
 			}
-			if slices.Contains(processedArgs, "2>") {
-				cmd_ = exec.Command(new_args[0], new_args[1:]...)
-				cmd_.Stdin = os.Stdin
-				cmd_.Stdout = os.Stdout
-				cmd_.Stderr = file
-				err = cmd_.Run()
-			} else {
-				cmd_ = exec.Command(new_args[0], new_args[1:]...)
-				cmd_.Stdin = os.Stdin
-				cmd_.Stdout = file
-				cmd_.Stderr = os.Stderr
-				err = cmd_.Run()
-			}
-		} else {
-			cmd_ = exec.Command(processedArgs[0], processedArgs[1:]...)
-			cmd_.Stdin = os.Stdin
-			cmd_.Stdout = os.Stdout
-			cmd_.Stderr = os.Stderr
-			err := cmd_.Run()
-			if err != nil {
-				fmt.Printf("%s: command not found\n", command)
-			}
+			defer file.Close()
 		}
 	}
 }
