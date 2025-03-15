@@ -148,6 +148,9 @@ func run_command(command string, args []string) {
 			case "1>>", ">>":
 				file = create_or_append_file(file_name, true)
 				execute_command(new_args[0], new_args[1:], file, true, false)
+			case "2>>":
+				file = create_or_append_file(file_name, true)
+				execute_command(new_args[0], new_args[1:], file, false, true)
 			}
 			defer file.Close()
 		}
