@@ -183,6 +183,7 @@ func autocomplete(input string, map_ map[string]string, builtin_map_ map[string]
 			return key[len(input):]
 		}
 	}
+	fmt.Print("\x07")
 	return ""
 }
 
