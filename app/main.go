@@ -7,6 +7,8 @@ import (
 	"os/exec"
 	"slices"
 	"strings"
+
+	"golang.org/x/term"
 )
 
 // Ensures gofmt doesn't remove the "fmt" import in stage 1 (feel free to remove this!)
@@ -167,6 +169,63 @@ func type_command(command string, words []string, map_ map[string]string, builti
 	}
 }
 
+func autocomplete(input string, map_ map[string]string, builtin_map_ map[string]bool) string {
+	if strings.Contains(input, " ") {
+		return ""
+	}
+	for key := range builtin_map_ {
+		if strings.HasPrefix(key, input) {
+			return key[len(input):]
+		}
+	}
+	for key := range map_ {
+		if strings.HasPrefix(key, input) {
+			return key[len(input):]
+		}
+	}
+	return ""
+}
+
+func read_input(map_ map[string]string, builtin_map_ map[string]bool) (input string) {
+	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
+	if err != nil {
+		panic(err)
+	}
+	defer term.Restore(int(os.Stdin.Fd()), oldState)
+	r := bufio.NewReader(os.Stdin)
+
+loop:
+	for {
+		c, _, err := r.ReadRune()
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		switch c {
+		case '\x03': // Ctrl+C
+			os.Exit(0)
+		case '\r', '\n': // Enter
+			fmt.Fprint(os.Stdout, "\r\n")
+			break loop
+		case '\t': // Tab
+			suffix := autocomplete(input, map_, builtin_map_)
+			if suffix != "" {
+				input += suffix + " "
+				fmt.Fprint(os.Stdout, suffix+" ")
+			}
+		case '\x7F': // Backspace
+			if length := len(input); length > 0 {
+				input = input[:length-1]
+				fmt.Fprint(os.Stdout, "\b \b")
+			}
+		default:
+			input += string(c)
+			fmt.Fprint(os.Stdout, string(c))
+		}
+	}
+	return input
+}
+
 func main() {
 	// Uncomment this block to pass the first stage
 	// Wait for user input
@@ -186,6 +245,7 @@ func main() {
 	for _, builtin := range builtin_list {
 		builtin_map_[builtin] = true
 	}
+
 	for _, path := range PATH_ {
 		entries, err := os.ReadDir(path)
 		if err != nil {
@@ -200,9 +260,9 @@ func main() {
 	}
 	for {
 		fmt.Fprint(os.Stdout, "$ ")
-		input, err := bufio.NewReader(os.Stdin).ReadString('\n')
-		if err != nil {
-			fmt.Printf("%s: invalid input\n", input)
+		input := read_input(map_, builtin_map_)
+		if input == "" {
+			continue
 		}
 		input_string := strings.TrimSpace(input)
 		args := strings.Split(input_string, " ")
