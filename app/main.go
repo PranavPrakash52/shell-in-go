@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"slices"
+	"sort"
 	"strings"
 
 	"golang.org/x/term"
@@ -169,22 +170,42 @@ func type_command(command string, words []string, map_ map[string]string, builti
 	}
 }
 
-func autocomplete(input string, map_ map[string]string, builtin_map_ map[string]bool) string {
+func autocomplete(input string, map_ map[string]string, builtin_map_ map[string]bool, tab_count int) []string {
+	var matched []string
 	if strings.Contains(input, " ") {
-		return ""
+		return []string{}
 	}
 	for key := range builtin_map_ {
 		if strings.HasPrefix(key, input) {
-			return key[len(input):]
+			if tab_count > 1 {
+				matched = append(matched, key)
+			} else {
+				matched = append(matched, key[len(input):])
+			}
 		}
 	}
 	for key := range map_ {
-		if strings.HasPrefix(key, input) {
-			return key[len(input):]
+		if strings.HasPrefix(key, input) && !builtin_map_[key] {
+			if tab_count > 1 {
+				matched = append(matched, key)
+			} else {
+				matched = append(matched, key[len(input):])
+			}
 		}
 	}
-	fmt.Print("\x07")
-	return ""
+
+	if len(matched) == 0 {
+		fmt.Print("\x07")
+		return []string{}
+	} else if len(matched) == 1 {
+		return matched
+	} else if len(matched) > 1 && tab_count == 1 {
+		fmt.Print("\x07")
+		return []string{}
+	} else if len(matched) > 1 && tab_count == 2 {
+		return matched
+	}
+	return []string{}
 }
 
 func read_input(map_ map[string]string, builtin_map_ map[string]bool) (input string) {
@@ -194,7 +215,7 @@ func read_input(map_ map[string]string, builtin_map_ map[string]bool) (input str
 	}
 	defer term.Restore(int(os.Stdin.Fd()), oldState)
 	r := bufio.NewReader(os.Stdin)
-
+	var prev_input rune
 loop:
 	for {
 		c, _, err := r.ReadRune()
@@ -209,10 +230,21 @@ loop:
 			fmt.Fprint(os.Stdout, "\r\n")
 			break loop
 		case '\t': // Tab
-			suffix := autocomplete(input, map_, builtin_map_)
-			if suffix != "" {
-				input += suffix + " "
-				fmt.Fprint(os.Stdout, suffix+" ")
+			tab_count := 1
+			if prev_input == c {
+				tab_count = 2
+			}
+			suffix := autocomplete(input, map_, builtin_map_, tab_count)
+			if len(suffix) > 0 {
+				if len(suffix) > 1 {
+					fmt.Print("\n\r")
+					sort.Strings(suffix)
+					fmt.Println(strings.Join(suffix, "  "))
+					fmt.Printf("\r$ %s", input)
+				} else {
+					input += suffix[0] + " "
+					fmt.Fprint(os.Stdout, suffix[0]+" ")
+				}
 			}
 		case '\x7F': // Backspace
 			if length := len(input); length > 0 {
@@ -223,6 +255,7 @@ loop:
 			input += string(c)
 			fmt.Fprint(os.Stdout, string(c))
 		}
+		prev_input = c
 	}
 	return input
 }
