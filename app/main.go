@@ -201,7 +201,7 @@ func autocomplete(input string, map_ map[string]string, builtin_map_ map[string]
 		return matched
 	} else if len(matched) > 1 && tab_count == 1 {
 		fmt.Print("\x07")
-		return []string{}
+		return matched
 	} else if len(matched) > 1 && tab_count == 2 {
 		return matched
 	}
@@ -236,11 +236,32 @@ loop:
 			}
 			suffix := autocomplete(input, map_, builtin_map_, tab_count)
 			if len(suffix) > 0 {
-				if len(suffix) > 1 {
+				if len(suffix) > 1 && tab_count == 2 {
 					fmt.Print("\n\r")
 					sort.Strings(suffix)
 					fmt.Println(strings.Join(suffix, "  "))
 					fmt.Printf("\r$ %s", input)
+				} else if len(suffix) > 1 && prev_input == '_' {
+					sameLength := true
+					if len(suffix) > 0 {
+						firstLen := len(suffix[0])
+						for _, s := range suffix {
+							if len(s) != firstLen {
+								sameLength = false
+								break
+							}
+						}
+					}
+					if sameLength {
+						prev_input = c
+						continue
+					}
+					slices.Sort(suffix)
+					input += suffix[0]
+					fmt.Fprint(os.Stdout, suffix[0])
+				} else if len(suffix) > 1 && tab_count == 1 {
+					prev_input = c
+					continue
 				} else {
 					input += suffix[0] + " "
 					fmt.Fprint(os.Stdout, suffix[0]+" ")
